@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AeroFoils: Interactive Aerodynamics & Airfoil Flow Simulator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="app-header">
+        <div class="logo">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h20M13 5l7 7-7 7"/></svg>
+            <h1>AeroFoils</h1>
+        </div>
+        <p class="tagline">Interactive Subsonic Wind Tunnel & Airfoil Physics Sandbox</p>
+    </header>
+
+    <main class="app-container">
+        <!-- Control Panel Sidebar -->
+        <aside class="control-panel">
+            <section class="control-section">
+                <h2>Airfoil Geometry</h2>
+                <div class="control-group">
+                    <label for="presetSelect">Airfoil Preset</label>
+                    <select id="presetSelect">
+                        <option value="naca0012">NACA 0012 (Symmetric)</option>
+                        <option value="naca2412" selected>NACA 2412 (Cambered)</option>
+                        <option value="naca4415">NACA 4415 (High Lift)</option>
+                        <option value="flatplate">Flat Plate</option>
+                        <option value="wedge">Wedge / Triangular</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <div class="label-val">
+                        <label for="camberRange">Camber (Curvature)</label>
+                        <span id="camberVal">2.0%</span>
+                    </div>
+                    <input type="range" id="camberRange" min="0" max="10" step="0.5" value="2">
+                </div>
+
+                <div class="control-group">
+                    <div class="label-val">
+                        <label for="thicknessRange">Thickness</label>
+                        <span id="thicknessVal">12.0%</span>
+                    </div>
+                    <input type="range" id="thicknessRange" min="4" max="25" step="1" value="12">
+                </div>
+            </section>
+
+            <section class="control-section">
+                <h2>Flight Conditions</h2>
+                <div class="control-group">
+                    <div class="label-val">
+                        <label for="aoaRange">Angle of Attack (&alpha;)</label>
+                        <span id="aoaVal">5.0&deg;</span>
+                    </div>
+                    <input type="range" id="aoaRange" min="-10" max="25" step="0.5" value="5">
+                </div>
+
+                <div class="control-group">
+                    <div class="label-val">
+                        <label for="speedRange">Air Speed ($v_{\infty}$)</label>
+                        <span id="speedVal">20 m/s</span>
+                    </div>
+                    <input type="range" id="speedRange" min="5" max="50" step="1" value="20">
+                </div>
+
+                <div class="control-group">
+                    <div class="label-val">
+                        <label for="smokeDensityRange">Smoke Particle Density</label>
+                        <span id="smokeDensityVal">Medium</span>
+                    </div>
+                    <input type="range" id="smokeDensityRange" min="1" max="3" step="1" value="2">
+                </div>
+            </section>
+
+            <section class="control-section">
+                <h2>Visualization Overlays</h2>
+                <div class="toggle-grid">
+                    <label class="toggle-item">
+                        <input type="checkbox" id="toggleStreamlines" checked>
+                        <span>Streamlines</span>
+                    </label>
+                    <label class="toggle-item">
+                        <input type="checkbox" id="togglePressure" checked>
+                        <span>Pressure Heatmap</span>
+                    </label>
+                    <label class="toggle-item">
+                        <input type="checkbox" id="toggleVectors">
+                        <span>Velocity Vectors</span>
+                    </label>
+                    <label class="toggle-item">
+                        <input type="checkbox" id="toggleForces" checked>
+                        <span>Lift/Drag Vectors</span>
+                    </label>
+                </div>
+
+                <div class="action-row">
+                    <button id="btnReset" class="btn secondary">Reset View</button>
+                    <button id="btnStall" class="btn primary">Test Stall Limit</button>
+                </div>
+            </section>
+        </aside>
+
+        <!-- Main Simulation Display -->
+        <section class="simulation-workspace">
+            <div class="canvas-wrapper">
+                <canvas id="simCanvas" width="800" height="500"></canvas>
+                <div class="canvas-overlay-badges">
+                    <div class="badge" id="flowStateBadge">Flow: Laminar</div>
+                    <div class="badge warning" id="stallBadge" style="display: none;">STALL WARNING!</div>
+                </div>
+                <div class="wind-direction-indicator">
+                    <span>Airflow &rarr;</span>
+                </div>
+            </div>
+
+            <!-- Telemetry Dashboard -->
+            <div class="telemetry-grid">
+                <div class="telemetry-card">
+                    <span class="t-label">Lift Force ($L$)</span>
+                    <span class="t-value" id="liftVal">0.00 N</span>
+                    <span class="t-sub" id="clVal">$C_L$ = 0.00</span>
+                </div>
+                <div class="telemetry-card">
+                    <span class="t-label">Drag Force ($D$)</span>
+                    <span class="t-value" id="dragVal">0.00 N</span>
+                    <span class="t-sub" id="cdVal">$C_D$ = 0.00</span>
+                </div>
+                <div class="telemetry-card">
+                    <span class="t-label">Lift-to-Drag Ratio</span>
+                    <span class="t-value" id="ldRatioVal">0.0</span>
+                    <span class="t-sub">Efficiency ($L/D$)</span>
+                </div>
+                <div class="telemetry-card">
+                    <span class="t-label">Stall Margin</span>
+                    <span class="t-value" id="stallMarginVal">10.0&deg;</span>
+                    <span class="t-sub">To critical angle</span>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="app-footer">
+        <p>AeroFoils Interactive Science Demo &bull; Built with HTML5 Canvas & Vanilla JavaScript</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
